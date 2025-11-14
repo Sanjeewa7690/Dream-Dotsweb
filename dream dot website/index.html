@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag Element Example</title>
+    <!-- Basic CSS for the draggable box and body -->
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent body scroll while dragging */
+        }
+        #draggable-box {
+            /* REQUIRED: Must be absolutely positioned to change its position via JavaScript */
+            position: absolute; 
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centers the element initially */
+            
+            width: 200px;
+            height: 150px;
+            background-color: #6366f1; /* Indigo */
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: grab; /* Indicates it can be picked up */
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; /* Prevents default touch scrolling/zoom */
+        }
+        #draggable-box:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="draggable-box">
+        <p>DRAG ME!</p>
+        <p class="text-xs mt-2 opacity-75">(Click/Tap and hold)</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const elmnt = document.getElementById('draggable-box');
+            if (elmnt) {
+                // Initialize the drag functionality
+                dragElement(elmnt);
+            }
+        });
+
+        /**
+         * Makes an HTML element draggable using mouse and touch events.
+         * @param {HTMLElement} elmnt - The element to make draggable.
+         */
+        function dragElement(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            // --- Core Mouse Functions ---
+            function dragMouseDown(e) {
+                e = e || window.event;
+                // Only allow left mouse button click (button 0)
+                if (e.button !== 0) return; 
+                e.preventDefault();
+                
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                // Calculate new position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                // Apply new position (subtracts 'pos2' for vertical movement, 'pos1' for horizontal)
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+
+            // --- Core Touch Functions (for mobile compatibility) ---
+            function dragTouchStart(e) {
+                // Only handle single touch
+                if (e.touches.length !== 1) return; 
+                e.preventDefault();
+                
+                // Get the starting touch position
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+
+                document.ontouchend = closeDragTouch;
+                document.ontouchmove = elementTouchDrag;
+            }
+
+            function elementTouchDrag(e) {
+                // Only handle single touch
+                if (e.touches.length !== 1) return;
+                e.preventDefault();
+
+                // Calculate new position using touch coordinates
+                pos1 = pos3 - e.touches[0].clientX;
+                pos2 = pos4 - e.touches[0].clientY;
+                pos3 = e.touches[0].clientX;
+                pos4 = e.touches[0].clientY;
+
+                // Apply new position
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragTouch() {
+                document.ontouchend = null;
+                document.ontouchmove = null;
+            }
+
+            // --- Event Listeners Setup ---
+            // Mouse events
+            elmnt.onmousedown = dragMouseDown;
+            
+            // Touch events (for mobile)
+            elmnt.ontouchstart = dragTouchStart;
+        }
+    </script>
+
+</body>
+</html>
